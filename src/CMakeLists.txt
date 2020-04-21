@@ -428,6 +428,7 @@ set(HEADER_FILES
   StrictifyFloat.h
   Substitute.h
   Target.h
+  Telemetry.h
   ThreadPool.h
   Tracing.h
   TrimNoOps.h
@@ -616,6 +617,7 @@ add_library(Halide ${HALIDE_LIBRARY_TYPE}
   StrictifyFloat.cpp
   Substitute.cpp
   Target.cpp
+  Telemetry.cpp
   Tracing.cpp
   TrimNoOps.cpp
   Tuple.cpp

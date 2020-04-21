@@ -9,6 +9,7 @@
 #include "IRPrinter.h"
 #include "Module.h"
 #include "Simplify.h"
+#include "Telemetry.h"
 
 namespace Halide {
 
@@ -743,6 +744,9 @@ std::string halide_type_to_c_type(const Type &t) {
 }
 
 int generate_filter_main_inner(int argc, char **argv, std::ostream &cerr) {
+    // Initialize Telemetry before we do anything else
+    set_telemetry(BasicTelemetry::from_env());
+
     const char kUsage[] =
         "gengen \n"
         "  [-g GENERATOR_NAME] [-f FUNCTION_NAME] [-o OUTPUT_DIR] [-r RUNTIME_NAME] [-d 1|0]\n"
@@ -978,6 +982,10 @@ int generate_filter_main_inner(int argc, char **argv, std::ostream &cerr) {
                 module_producer(function_name, targets[0]).compile(output_files);
             }
         }
+    }
+
+    if (get_telemetry()) {
+        get_telemetry()->finalize();
     }
 
     return 0;

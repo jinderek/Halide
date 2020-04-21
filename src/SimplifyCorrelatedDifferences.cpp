@@ -10,6 +10,7 @@
 #include "Simplify.h"
 #include "Solve.h"
 #include "Substitute.h"
+#include "Telemetry.h"
 
 namespace Halide {
 namespace Internal {
@@ -218,9 +219,14 @@ class SimplifyCorrelatedDifferences : public IRMutator {
             e = PartiallyCancelDifferences().mutate(e);
             e = simplify(e);
 
-            if ((debug::debug_level() > 0) &&
+            const bool check_non_monotonic = debug::debug_level() > 0 || get_telemetry() != nullptr;
+            if (check_non_monotonic &&
                 is_monotonic(e, loop_var) == Monotonic::Unknown) {
                 // Might be a missed simplification opportunity. Log to help improve the simplifier.
+                if (get_telemetry()) {
+                    get_telemetry()->record_non_monotonic_loop_var(loop_var, e);
+                }
+                // TODO: should we remove the debug statement?
                 debug(1) << "Warning: expression is non-monotonic in loop variable "
                          << loop_var << ": " << e << "\n";
             }

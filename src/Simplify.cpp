@@ -4,6 +4,7 @@
 #include "CSE.h"
 #include "IRMutator.h"
 #include "Substitute.h"
+#include "Telemetry.h"
 
 namespace Halide {
 namespace Internal {
@@ -326,7 +327,8 @@ bool can_prove(Expr e, const Scope<Interval> &bounds) {
 
     // Take a closer look at all failed proof attempts to hunt for
     // simplifier weaknesses
-    if (debug::debug_level() > 0 && !is_const(e)) {
+    const bool check_failed_proofs = debug::debug_level() > 0 || get_telemetry() != nullptr;
+    if (check_failed_proofs && !is_const(e)) {
         struct RenameVariables : public IRMutator {
             using IRMutator::visit;
 
@@ -382,8 +384,14 @@ bool can_prove(Expr e, const Scope<Interval> &bounds) {
             }
         }
 
-        debug(0) << "Failed to prove, but could not find a counter-example:\n " << e << "\n";
-        debug(0) << "Original expression:\n"
+        if (get_telemetry()) {
+            get_telemetry()->record_failed_to_prove(e, orig);
+        }
+
+        // TODO: should we remove the debug statement?
+
+        debug(1) << "Failed to prove, but could not find a counter-example:\n " << e << "\n";
+        debug(1) << "Original expression:\n"
                  << orig << "\n";
         return false;
     }
